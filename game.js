@@ -1456,7 +1456,7 @@ function fit() {
   s = Math.max(0.5, Math.floor(s * 4) / 4);
   scaleF = s;
   app.style.transform = 'translate(-50%, -50%)' +
-    (rotated ? ' rotate(180deg)' : '') + ' scale(' + s + ')';
+    (rotated ? ' rotate(270deg)' : '') + ' scale(' + s + ')';
 }
 
 function loop() {
