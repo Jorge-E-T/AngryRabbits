@@ -51,150 +51,205 @@ function F(x, y) {
    at x >= ~130. Foxes are exposed (open-top pens, tower tops) or
    inside collapsible/blastable structures — solver-verified. */
 var LEVELS = [
-  { // 1 — two foxes behind a glass post; learn to drag & lob
-    name: 'First Hop',
-    stars: [10000, 14000, 20000],
+  { // 1 — learn to drag and lob
+    name: 'First Hop', stars: [10000, 14000, 20000],
     queue: ['rusty', 'rusty'],
     platforms: [],
     make: function () { return {
-      blocks: [
-        B('glass', 176, 184, 10, 30),
-        B('wood', 206, 200, 16, 14)
-      ],
+      blocks: [ B('glass', 176, 184, 10, 30), B('wood', 206, 200, 16, 14) ],
       foxes: [F(196, 207), F(232, 207)]
     }; }
   },
-  { // 2 — glass pen + a lookout tower
-    name: 'Glass House',
-    stars: [15000, 20000, 26000],
+  { // 2 — a pen and a lookout tower
+    name: 'Glass House', stars: [15000, 20000, 26000],
     queue: ['rusty', 'zip', 'rusty'],
     platforms: [],
     make: function () { return {
-      blocks: [
-        B('glass', 150, 184, 10, 30),
-        B('glass', 196, 184, 10, 30),
-        B('wood', 236, 186, 14, 28)
-      ],
+      blocks: [ B('glass', 150, 184, 10, 30), B('glass', 196, 184, 10, 30), B('wood', 236, 186, 14, 28) ],
       foxes: [F(170, 207), F(188, 207), F(243, 179)]
     }; }
   },
-  { // 3 — spread-out targets; The Trio's split shines
-    name: 'Split Decision',
-    stars: [15000, 21000, 25500],
+  { // 3 — spread-out targets; The Trio debuts
+    name: 'Split Decision', stars: [15000, 21000, 25500],
     queue: ['trio', 'rusty', 'zip'],
     platforms: [{ x: 150, y: 126, w: 70, h: 10 }],
     make: function () { return {
-      blocks: [
-        B('glass', 134, 184, 10, 30),
-        B('glass', 176, 184, 10, 30),
-        B('glass', 236, 190, 10, 24),
-        B('wood', 176, 112, 14, 14)
-      ],
+      blocks: [ B('glass', 134, 184, 10, 30), B('glass', 176, 184, 10, 30),
+                B('glass', 236, 190, 10, 24), B('wood', 176, 112, 14, 14) ],
       foxes: [F(158, 207), F(256, 207), F(162, 119)]
     }; }
   },
-  { // 4 — tall wood walls; Zip slices straight through
-    name: 'Woodpecker',
-    stars: [15000, 21000, 26000],
+  { // 4 — tall wood walls; Zip slices through
+    name: 'Woodpecker', stars: [15000, 21000, 26000],
     queue: ['zip', 'rusty', 'zip'],
     platforms: [],
     make: function () { return {
-      blocks: [
-        B('wood', 168, 164, 10, 50),
-        B('wood', 216, 164, 10, 50),
-        B('glass', 250, 196, 12, 18)
-      ],
+      blocks: [ B('wood', 168, 164, 10, 50), B('wood', 216, 164, 10, 50), B('glass', 250, 196, 12, 18) ],
       foxes: [F(194, 207), F(238, 207), F(256, 189)]
     }; }
   },
-  { // 5 — a high ledge pen; Willow bombs it from above
-    name: 'Sky Ledge',
-    stars: [15000, 21000, 26000],
+  { // 5 — high ledge pen; Willow bombs from above
+    name: 'Sky Ledge', stars: [15000, 21000, 26000],
     queue: ['rusty', 'willow', 'rusty'],
     platforms: [{ x: 186, y: 118, w: 88, h: 10 }],
     make: function () { return {
-      blocks: [
-        B('glass', 194, 88, 10, 30),
-        B('glass', 252, 88, 10, 30),
-        B('wood', 146, 190, 12, 24)
-      ],
+      blocks: [ B('glass', 194, 88, 10, 30), B('glass', 252, 88, 10, 30), B('wood', 146, 190, 12, 24) ],
       foxes: [F(220, 111), F(238, 111), F(166, 207)]
     }; }
   },
-  { // 6 — two storeys; shatter the glass legs and it all comes down
-    name: 'Double Decker',
-    stars: [20000, 26000, 33000],
+  { // 6 — two storeys; shatter the legs and it all comes down
+    name: 'Double Decker', stars: [20000, 26000, 33000],
     queue: ['rusty', 'zip', 'trio'],
     platforms: [],
     make: function () { return {
-      blocks: [
-        B('glass', 188, 174, 10, 40),
-        B('glass', 242, 174, 10, 40),
-        B('wood', 182, 164, 76, 10),
-        B('glass', 192, 134, 10, 30),
-        B('glass', 240, 134, 10, 30)
-      ],
+      blocks: [ B('glass', 188, 174, 10, 40), B('glass', 242, 174, 10, 40), B('wood', 182, 164, 76, 10),
+                B('glass', 192, 134, 10, 30), B('glass', 240, 134, 10, 30) ],
       foxes: [F(212, 207), F(228, 207), F(212, 157), F(228, 157)]
     }; }
   },
-  { // 7 — stone gate; Boomer's blast makes the introductions
-    name: 'Stone Gate',
-    stars: [15000, 22000, 29000],
+  { // 7 — stone gate; Boomer debuts
+    name: 'Stone Gate', stars: [15000, 22000, 29000],
     queue: ['boomer', 'rusty', 'trio'],
     platforms: [],
     make: function () { return {
-      blocks: [
-        B('stone', 172, 166, 14, 48),
-        B('stone', 216, 190, 14, 24)
-      ],
+      blocks: [ B('stone', 172, 166, 14, 48), B('stone', 216, 190, 14, 24) ],
       foxes: [F(198, 207), F(244, 207), F(179, 159)]
     }; }
   },
-  { // 8 — foxes perched on towers; topple or snipe them
-    name: 'Fox Towers',
-    stars: [20000, 27000, 34000],
+  { // 8 — foxes perched on towers; topple or snipe
+    name: 'Fox Towers', stars: [20000, 27000, 34000],
     queue: ['trio', 'willow', 'zip'],
     platforms: [],
     make: function () { return {
-      blocks: [
-        B('wood', 176, 168, 12, 46),
-        B('wood', 226, 150, 12, 64),
-        B('glass', 258, 188, 10, 26)
-      ],
+      blocks: [ B('wood', 176, 168, 12, 46), B('wood', 226, 150, 12, 64), B('glass', 258, 188, 10, 26) ],
       foxes: [F(182, 161), F(232, 143), F(204, 207), F(274, 207)]
     }; }
   },
-  { // 9 — a stone bunker; Big Moe simply does not care
-    name: 'Heavyweight',
-    stars: [20000, 28000, 36000],
+  { // 9 — stone bunker; Big Moe debuts
+    name: 'Heavyweight', stars: [20000, 28000, 36000],
     queue: ['moe', 'rusty', 'trio'],
     platforms: [],
     make: function () { return {
-      blocks: [
-        B('stone', 184, 174, 12, 40),
-        B('stone', 240, 174, 12, 40),
-        B('stone', 178, 164, 80, 10),
-        B('wood', 208, 150, 14, 14)
-      ],
+      blocks: [ B('stone', 184, 174, 12, 40), B('stone', 240, 174, 12, 40),
+                B('stone', 178, 164, 80, 10), B('wood', 208, 150, 14, 14) ],
       foxes: [F(210, 207), F(228, 207), F(215, 143), F(268, 207)]
     }; }
   },
-  { // 10 — everything at once: wall, stone keep, sky pen
-    name: 'The Carrot Vault',
-    stars: [25000, 35000, 46000],
-    queue: ['zip', 'trio', 'boomer', 'willow', 'moe'],
+  { // 10 — wall + keep + sky pen
+    name: 'Carrot Vault', stars: [25000, 34000, 43000],
+    queue: ['zip', 'trio', 'boomer', 'moe'],
     platforms: [{ x: 158, y: 112, w: 104, h: 10 }],
     make: function () { return {
-      blocks: [
-        B('wood', 148, 170, 10, 44),
-        B('stone', 186, 174, 12, 40),
-        B('stone', 236, 174, 12, 40),
-        B('stone', 180, 164, 74, 10),
-        B('glass', 168, 82, 10, 30),
-        B('glass', 238, 82, 10, 30),
-        B('wood', 196, 98, 16, 14)
-      ],
+      blocks: [ B('wood', 148, 170, 10, 44), B('stone', 186, 174, 12, 40), B('stone', 236, 174, 12, 40),
+                B('stone', 180, 164, 74, 10), B('glass', 168, 82, 10, 30), B('glass', 238, 82, 10, 30),
+                B('wood', 196, 98, 16, 14) ],
       foxes: [F(212, 207), F(228, 207), F(217, 157), F(186, 105), F(224, 105)]
+    }; }
+  },
+  { // 11 — far corner pen behind a stone wall
+    name: 'Long Shot', stars: [20000, 25000, 30000],
+    queue: ['zip', 'rusty', 'trio'],
+    platforms: [{ x: 200, y: 104, w: 76, h: 10 }],
+    make: function () { return {
+      blocks: [ B('glass', 206, 74, 10, 30), B('glass', 258, 74, 10, 30),
+                B('stone', 186, 182, 14, 32), B('wood', 236, 200, 16, 14) ],
+      foxes: [F(230, 97), F(246, 97), F(214, 207), F(262, 207)]
+    }; }
+  },
+  { // 12 — a whole glass estate
+    name: 'Glass Castle', stars: [25000, 33000, 41000],
+    queue: ['trio', 'trio', 'willow', 'rusty'],
+    platforms: [],
+    make: function () { return {
+      blocks: [ B('glass', 146, 174, 10, 40), B('glass', 192, 174, 10, 40), B('glass', 140, 164, 68, 10),
+                B('glass', 218, 174, 10, 40), B('glass', 264, 174, 10, 40), B('glass', 212, 164, 68, 10),
+                B('glass', 162, 148, 16, 16), B('glass', 234, 148, 16, 16) ],
+      foxes: [F(169, 207), F(241, 207), F(186, 157), F(258, 157), F(132, 207)]
+    }; }
+  },
+  { // 13 — stone shields front and centre
+    name: 'Shield Wall', stars: [20000, 28000, 36000],
+    queue: ['boomer', 'moe', 'trio'],
+    platforms: [],
+    make: function () { return {
+      blocks: [ B('stone', 162, 158, 14, 56), B('stone', 210, 166, 14, 48), B('stone', 186, 198, 16, 16) ],
+      foxes: [F(194, 191), F(238, 207), F(258, 207), F(169, 151)]
+    }; }
+  },
+  { // 14 — fortress on two ledges
+    name: 'High Fortress', stars: [25000, 31000, 37000],
+    queue: ['zip', 'willow', 'boomer', 'rusty'],
+    platforms: [ { x: 166, y: 150, w: 110, h: 10 }, { x: 190, y: 96, w: 86, h: 10 } ],
+    make: function () { return {
+      blocks: [ B('wood', 158, 178, 10, 36),
+                B('stone', 180, 118, 12, 32), B('stone', 236, 118, 12, 32), B('glass', 196, 134, 16, 16),
+                B('glass', 198, 66, 10, 30), B('glass', 250, 66, 10, 30) ],
+      foxes: [F(182, 207), F(222, 143), F(262, 143), F(224, 89), F(240, 89)]
+    }; }
+  },
+  { // 15 — three storeys, only three rabbits
+    name: 'Three Storeys', stars: [25000, 32000, 39000],
+    queue: ['moe', 'trio', 'boomer'],
+    platforms: [],
+    make: function () { return {
+      blocks: [ B('stone', 182, 174, 12, 40), B('stone', 242, 174, 12, 40), B('stone', 176, 164, 84, 10),
+                B('wood', 192, 134, 10, 30), B('wood', 234, 134, 10, 30), B('wood', 186, 124, 64, 10),
+                B('glass', 208, 108, 20, 16) ],
+      foxes: [F(206, 207), F(222, 207), F(214, 157), F(242, 117), F(218, 101)]
+    }; }
+  },
+  { // 16 — two stone keeps side by side
+    name: 'Twin Keeps', stars: [30000, 39000, 48000],
+    queue: ['boomer', 'moe', 'trio', 'zip'],
+    platforms: [],
+    make: function () { return {
+      blocks: [ B('stone', 150, 174, 12, 40), B('stone', 196, 174, 12, 40), B('stone', 144, 164, 70, 10),
+                B('stone', 228, 174, 12, 40), B('stone', 264, 174, 12, 40), B('stone', 224, 164, 56, 10),
+                B('wood', 126, 192, 12, 22) ],
+      foxes: [F(170, 207), F(186, 207), F(252, 207), F(179, 157), F(252, 157), F(132, 185)]
+    }; }
+  },
+  { // 17 — foxes sheltered UNDER a ledge; lobs won't reach them
+    name: 'Overhang', stars: [25000, 33000, 41000],
+    queue: ['willow', 'trio', 'boomer', 'zip'],
+    platforms: [{ x: 170, y: 140, w: 100, h: 10 }],
+    make: function () { return {
+      blocks: [ B('glass', 182, 184, 10, 30), B('glass', 238, 184, 10, 30),
+                B('wood', 178, 110, 10, 30), B('wood', 252, 110, 10, 30),
+                B('stone', 248, 190, 12, 24) ],
+      foxes: [F(204, 207), F(222, 207), F(206, 133), F(226, 133), F(266, 207)]
+    }; }
+  },
+  { // 18 — wall after wall after wall
+    name: 'The Gauntlet', stars: [30000, 39000, 48000],
+    queue: ['zip', 'boomer', 'moe', 'trio'],
+    platforms: [],
+    make: function () { return {
+      blocks: [ B('wood', 150, 170, 10, 44), B('stone', 190, 166, 12, 48),
+                B('wood', 230, 170, 10, 44), B('stone', 266, 178, 12, 36) ],
+      foxes: [F(172, 207), F(212, 207), F(250, 207), F(196, 159), F(235, 163), F(155, 163)]
+    }; }
+  },
+  { // 19 — a wooden bridge between two sky ledges
+    name: 'Sky Bridge', stars: [30000, 35000, 41000],
+    queue: ['trio', 'willow', 'moe', 'boomer'],
+    platforms: [ { x: 150, y: 120, w: 56, h: 10 }, { x: 230, y: 120, w: 52, h: 10 } ],
+    make: function () { return {
+      blocks: [ B('wood', 196, 110, 44, 10),
+                B('glass', 176, 184, 10, 30), B('glass', 246, 184, 10, 30) ],
+      foxes: [F(218, 103), F(170, 113), F(258, 113), F(204, 207), F(226, 207), F(266, 207)]
+    }; }
+  },
+  { // 20 — the grand finale: Foxholm
+    name: 'Foxholm', stars: [35000, 45000, 56000],
+    queue: ['zip', 'trio', 'boomer', 'willow', 'moe'],
+    platforms: [{ x: 162, y: 104, w: 112, h: 10 }],
+    make: function () { return {
+      blocks: [ B('wood', 144, 170, 10, 44),
+                B('stone', 180, 174, 12, 40), B('stone', 232, 174, 12, 40), B('stone', 174, 164, 76, 10),
+                B('glass', 262, 184, 10, 30),
+                B('glass', 172, 74, 10, 30), B('glass', 240, 74, 10, 30), B('wood', 200, 90, 16, 14) ],
+      foxes: [F(204, 207), F(220, 207), F(252, 207), F(211, 157), F(190, 97), F(226, 97), F(208, 83)]
     }; }
   }
 ];
@@ -243,6 +298,7 @@ function mergeSave(b) {         // take the max per level; never regress
   if (b.stars) for (i = 0; i < LEVELS.length; i++) {
     save.stars[i] = Math.max(save.stars[i] | 0, b.stars[i] | 0);
   }
+  if (b.musicOff !== undefined) save.musicOff = b.musicOff;
 }
 
 function parseRaw(v) {          // accept base64-wrapped or plain JSON
@@ -303,14 +359,32 @@ function sfx(freq, dur, type, vol) {
   } catch (e) {}
 }
 
-/* ---------------- looping music ---------------- */
-var musicOn = false, musicStep = 0;
-var MELODY = [523, 659, 784, 659, 587, 784, 880, 784,
-              523, 659, 784, 880, 1047, 880, 784, 659,
-              523, 659, 784, 659, 587, 740, 880, 740,
-              659, 784, 880, 1047, 784, 659, 587, 523];
-var BASSLN = [131, 131, 196, 196, 147, 147, 220, 220,
-              131, 131, 196, 196, 165, 165, 196, 196];
+/* ---------------- looping music ----------------
+   A 128-step original tune (four 8-bar phrases, AABA form) with
+   melody, walking bass and a soft tick. Toggle with the Music
+   button on the menu (or the M key in a browser). */
+var musicOn = false, musicMuted = false;
+var songPos = 0, stepInNote = 0, globalStep = 0;
+/* melody as [frequency, length-in-steps]; 0 = rest */
+var SONG = [
+  // phrase A
+  [523,2],[659,1],[784,1],[880,2],[784,1],[659,1],[587,2],[698,1],[880,1],[784,3],[0,1],
+  [659,1],[784,1],[1047,2],[988,1],[880,1],[784,2],[880,2],[698,1],[587,1],[523,3],[0,1],
+  // phrase A (softer ending)
+  [523,2],[659,1],[784,1],[880,2],[784,1],[659,1],[587,2],[698,1],[880,1],[784,3],[0,1],
+  [659,1],[784,1],[1047,2],[988,1],[880,1],[784,2],[659,2],[587,1],[494,1],[523,3],[0,1],
+  // phrase B (the answer)
+  [659,2],[784,1],[880,1],[1047,2],[880,1],[784,1],[698,2],[880,1],[698,1],[587,3],[0,1],
+  [523,1],[587,1],[659,2],[784,1],[659,1],[587,1],[523,1],[494,2],[587,2],[523,3],[0,1],
+  // phrase A (home again)
+  [523,2],[659,1],[784,1],[880,2],[784,1],[659,1],[587,2],[698,1],[880,1],[784,3],[0,1],
+  [659,1],[784,1],[1047,2],[988,1],[880,1],[784,2],[659,2],[587,1],[494,1],[523,3],[0,1]
+];
+/* one bass root per bar (4 steps), matched to the phrases above */
+var BASSLN = [131,131,175,131, 196,175,196,131,
+              131,131,175,131, 196,175,131,131,
+              220,220,175,175, 196,196,165,196,
+              131,131,175,131, 196,175,131,131];
 function note(freq, t, dur, type, vol) {
   try {
     var o = AC.createOscillator(), g = AC.createGain();
@@ -322,17 +396,34 @@ function note(freq, t, dur, type, vol) {
   } catch (e) {}
 }
 function musicTick() {
-  if (!AC || AC.state !== 'running') return;
+  if (!AC || AC.state !== 'running' || musicMuted) return;
   var t = AC.currentTime;
-  note(MELODY[musicStep % MELODY.length], t, 0.16, 'triangle', 0.022);
-  if (musicStep % 2 === 0) note(BASSLN[(musicStep >> 1) % BASSLN.length], t, 0.3, 'sine', 0.03);
-  if (musicStep % 4 === 2) note(2400, t, 0.03, 'square', 0.008);
-  musicStep++;
+  if (stepInNote === 0 && SONG[songPos][0]) {
+    note(SONG[songPos][0], t, SONG[songPos][1] * 0.14 * 0.92, 'triangle', 0.02);
+  }
+  var bar = (globalStep >> 2) % BASSLN.length;
+  if (globalStep % 4 === 0) note(BASSLN[bar], t, 0.5, 'sine', 0.03);
+  if (globalStep % 4 === 2) note(BASSLN[bar] * 1.5, t, 0.3, 'sine', 0.014);
+  if (globalStep % 8 === 6) note(2600, t, 0.03, 'square', 0.006);
+  stepInNote++;
+  if (stepInNote >= SONG[songPos][1]) { stepInNote = 0; songPos = (songPos + 1) % SONG.length; }
+  globalStep++;
 }
 function startMusic() {
   if (musicOn || !AC) return;
   musicOn = true;
-  setInterval(musicTick, 190);
+  setInterval(musicTick, 150);
+}
+function toggleMusic() {
+  musicMuted = !musicMuted;
+  save.musicOff = musicMuted ? 1 : 0;
+  writeSave();
+  updateMusicBtn();
+  if (!musicMuted) unlockAudio();
+}
+function updateMusicBtn() {
+  var b = document.getElementById('btnMusic');
+  if (b) b.textContent = musicMuted ? 'Music: OFF' : 'Music: ON';
 }
 
 /* ---------------- helpers ---------------- */
@@ -433,7 +524,7 @@ function makeProj(typeKey, x, y, vx, vy, opts) {
   var p = { type: typeKey, x: x, y: y, vx: vx, vy: vy,
             r: t.r, mass: t.mass, rot: 0, age: 0, slow: 0,
             dead: false, abUsed: false, dash: false, small: false,
-            fuse: -1, bomb: false };
+            fuse: -1, bomb: false, seed: (Math.random() * 999) | 0 };
   if (opts) for (var k in opts) p[k] = opts[k];
   return p;
 }
@@ -898,6 +989,8 @@ function updatePlay() {
 
 /* ---------------- overlays / menu ---------------- */
 function buildMenu() {
+  musicMuted = save.musicOff === 1;
+  updateMusicBtn();
   var list = document.getElementById('levelList');
   list.innerHTML = '';
   LEVELS.forEach(function (L, i) {
@@ -1051,9 +1144,18 @@ function bindInput() {
       else if (scene === 'menu') startSelected();
     } else if (e.key === 'r' || e.key === 'R') {
       if (scene === 'play') startLevel(lvIdx);
+    } else if (e.key === 'm' || e.key === 'M') {
+      toggleMusic();
     } else if (e.key === 'ArrowUp') { if (scene === 'menu') moveSel(-1); }
     else if (e.key === 'ArrowDown') { if (scene === 'menu') moveSel(1); }
   });
+
+  var mb = document.createElement('button');
+  mb.id = 'btnMusic';
+  mb.style.cssText = 'margin-top:6px;padding:2px 10px;font-size:9px;min-height:20px;flex:none;';
+  mb.textContent = 'Music: ON';
+  mb.addEventListener('click', toggleMusic);
+  document.querySelector('#menu .card').appendChild(mb);
 
   window.addEventListener('pagehide', writeSave);
   document.addEventListener('visibilitychange', function () {
@@ -1180,8 +1282,8 @@ function drawFox(f) {
   var s;
   for (var i = 0; i < 2; i++) {
     s = i === 0 ? -1 : 1;
-    var tw = Math.sin(frame * 0.11 + f.blink + i * 2.3);
-    tw = tw > 0.82 ? (tw - 0.82) * 2.4 : 0;
+    var tw = Math.sin(frame * (0.05 + (f.blink % 9) * 0.011) + f.blink * 1.7 + i * 2.3);
+    tw = tw > 0.9 ? (tw - 0.9) * 5 : 0;
     ctx.save();
     ctx.translate(s * r * 0.5, -r * 0.55);
     ctx.rotate(s * tw * 0.45);
@@ -1220,20 +1322,26 @@ function drawFox(f) {
   ctx.restore();
 }
 
-function drawRabbit(key, x, y, rot, r) {
+function drawRabbit(key, x, y, rot, r, seed) {
   var t = TYPES[key];
+  seed = seed || 0;
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(rot || 0);
+  // rare random ear fold: each rabbit runs its own clock
+  var per = 300 + (seed % 170);
+  var ph = (frame + seed * 7) % per;
+  var fold = ph < 36 ? Math.sin(Math.PI * ph / 36) : 0;
   var er = r * 0.42, s;
   for (var i = 0; i < 2; i++) {
     s = i === 0 ? -1 : 1;
     ctx.save();
-    ctx.rotate(s * (0.22 + Math.sin(frame * 0.13 + s * 1.7) * 0.08));
+    ctx.rotate(s * (0.22 + fold * 0.85));
+    var el2 = r * 1.05 * (1 - fold * 0.45);
     ctx.fillStyle = t.c; ctx.strokeStyle = t.c2; ctx.lineWidth = 1;
-    ellipsePath(s * r * 0.42, -r * 1.5, er, r * 1.05); ctx.fill(); ctx.stroke();
+    ellipsePath(s * r * 0.42, -r * 0.45 - el2, er, el2); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#f4a9b8';
-    ellipsePath(s * r * 0.42, -r * 1.42, er * 0.45, r * 0.7); ctx.fill();
+    ellipsePath(s * r * 0.42, -r * 0.42 - el2 * 0.92, er * 0.45, el2 * 0.66); ctx.fill();
     ctx.restore();
   }
   ctx.fillStyle = t.c; ctx.strokeStyle = t.c2; ctx.lineWidth = 1.4;
@@ -1241,7 +1349,7 @@ function drawRabbit(key, x, y, rot, r) {
   ctx.fillStyle = 'rgba(255,255,255,0.55)';
   ellipsePath(0, r * 0.38, r * 0.55, r * 0.42); ctx.fill();
   var ex = r * 0.36, ey = -r * 0.18, es = Math.max(1.6, r * 0.24);
-  if ((frame + ((r * 37) | 0)) % 200 < 8) {
+  if ((frame + seed * 13) % (180 + (seed % 90)) < 8) {
     ctx.strokeStyle = '#33222a'; ctx.lineWidth = 1.1; ctx.lineCap = 'round';
     ctx.beginPath();
     ctx.moveTo(-ex - es * 0.7, ey); ctx.lineTo(-ex + es * 0.7, ey);
@@ -1332,7 +1440,7 @@ function drawLoaded() {
     var py = SL.y + (drag ? drag.dy : 0) + bob;
     if (sub === 'aiming') drawTraj();
     band(fRx, fRy, px, py);
-    drawRabbit(loaded, px, py, drag ? Math.atan2(-drag.dy, -drag.dx) * 0.15 : 0, TYPES[loaded].r);
+    drawRabbit(loaded, px, py, drag ? Math.atan2(-drag.dy, -drag.dx) * 0.15 : 0, TYPES[loaded].r, 31);
     band(fLx, fLy, px, py);
   } else {
     ctx.strokeStyle = '#7a2d2d'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
@@ -1347,7 +1455,7 @@ function drawQueueMinis() {
   for (var i = 0; i < queue.length; i++) {
     var k = queue[i];
     var r = Math.min(5.5, TYPES[k].r * 0.72);
-    drawRabbit(k, 12 + i * 15, GY - r + 2, 0, r);
+    drawRabbit(k, 12 + i * 15, GY - r + 2, 0, r, 41 + i * 67);
   }
 }
 
@@ -1436,7 +1544,7 @@ function draw() {
     if (p.dead) continue;
     if (p.bomb) drawBomb(p);
     else {
-      drawRabbit(p.type, p.x, p.y, p.rot, p.r);
+      drawRabbit(p.type, p.x, p.y, p.rot, p.r, p.seed);
       if (p.fuse > 0 && frame % 8 < 4) {
         ctx.fillStyle = 'rgba(255,90,60,0.35)';
         ctx.beginPath(); ctx.arc(p.x, p.y, p.r + 3, 0, 7); ctx.fill();
@@ -1448,7 +1556,7 @@ function draw() {
   drawTexts();
   ctx.restore();
   if (scene === 'menu') {
-    drawRabbit('rusty', 58, GY - 7, 0, 7);
+    drawRabbit('rusty', 58, GY - 7, 0, 7, 77);
     drawFox({ x: 246, y: GY - 6.5, r: 6.5, blink: 40 });
   }
   drawHUD();
