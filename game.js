@@ -977,8 +977,8 @@ function ptFromEvent(e) {
   var rect = app.getBoundingClientRect();
   var cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
   if (rotated) {
-    return { x: (e.clientY - cy) / scaleF + W / 2,
-             y: H / 2 - (e.clientX - cx) / scaleF };
+    return { x: H / 2 - (e.clientY - cy) / scaleF,
+             y: (e.clientX - cx) / scaleF + W / 2 };
   }
   return { x: (e.clientX - cx) / scaleF + W / 2,
            y: (e.clientY - cy) / scaleF + H / 2 };
