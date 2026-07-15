@@ -972,16 +972,22 @@ function showEnd(win, st, unused) {
 
 /* ---------------- input ---------------- */
 function ptFromEvent(e) {
-  // Map screen coords into game space, accounting for the 90deg
+  // Map screen coords into game space, accounting for the 270deg
   // rotation applied when the viewport is portrait (the R1).
   var rect = app.getBoundingClientRect();
   var cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+  
   if (rotated) {
-    return { x: H / 2 - (e.clientY - cy) / scaleF,
-             y: (e.clientX - cx) / scaleF + W / 2 };
+    return { 
+      x: W / 2 - (e.clientY - cy) / scaleF, 
+      y: (e.clientX - cx) / scaleF + H / 2 
+    };
   }
-  return { x: (e.clientX - cx) / scaleF + W / 2,
-           y: (e.clientY - cy) / scaleF + H / 2 };
+  
+  return { 
+    x: (e.clientX - cx) / scaleF + W / 2, 
+    y: (e.clientY - cy) / scaleF + H / 2 
+  };
 }
 
 function bindInput() {
