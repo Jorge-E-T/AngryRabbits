@@ -1,23 +1,24 @@
 /* ============================================================
    ANGRY RABBITS — an original slingshot physics game
-   Built for the Rabbit R1 (240 x 282 portrait, touch + wheel + PTT)
+   Built for the Rabbit R1, played SIDEWAYS: the whole app is
+   rotated 90 degrees (CSS transform) so the 282px screen edge
+   becomes the horizontal play axis. Slingshot on the left, fox
+   forts to the right. In a wide browser window it renders
+   unrotated. All input is mapped through the rotation.
 
    Original characters & artwork. Genre mechanics: drag-launch
    slingshot, arc physics, destructible wood/glass/stone forts,
-   tap-activated abilities, 3-star scoring, persistent high scores.
-
-   Vertical battlefield: slingshot at the bottom, fox forts
-   stacked on ledges above. Launch UP, watch debris rain DOWN.
+   tap-activated abilities, 3-star scoring.
    ============================================================ */
 (function () {
 'use strict';
 
 /* ---------------- constants ---------------- */
-var W = 240, H = 282, GY = 258;        // canvas size, ground top
+var W = 282, H = 240, GY = 214;         // landscape canvas, ground top
 var GRAV = 0.22;                        // gravity px/frame^2
-var MAXPULL = 52, POWER = 0.19;         // slingshot pull radius / power
+var MAXPULL = 48, POWER = 0.19;         // slingshot pull radius / power
 var MAXSPD = 11;
-var SL = { x: 46, y: 216 };             // slingshot pouch anchor (left launch corridor)
+var SL = { x: 58, y: 176 };             // slingshot anchor (left side)
 
 var MATS = {
   wood:  { hp: 20, score: 500, c1: '#c98a4b', c2: '#9a6630' },
@@ -27,12 +28,12 @@ var MATS = {
 
 /* Original rabbit roster — one per classic ability archetype */
 var TYPES = {
-  rusty:  { label: 'Rusty',    r: 9,  mass: 1.15, c: '#e04b3a', c2: '#b3372a', ab: 'none'  },
-  trio:   { label: 'The Trio', r: 7,  mass: 0.85, c: '#4d9be6', c2: '#3573b3', ab: 'split' },
-  zip:    { label: 'Zip',      r: 8,  mass: 0.95, c: '#f5c531', c2: '#c99a1d', ab: 'dash'  },
-  boomer: { label: 'Boomer',   r: 9,  mass: 1.25, c: '#4a4a58', c2: '#2e2e38', ab: 'boom'  },
-  willow: { label: 'Willow',   r: 9,  mass: 1.05, c: '#f6f1e3', c2: '#cfc6ad', ab: 'drop'  },
-  moe:    { label: 'Big Moe',  r: 13, mass: 2.6,  c: '#a4693a', c2: '#7c4c26', ab: 'none'  }
+  rusty:  { label: 'Rusty',    r: 7,   mass: 1.15, c: '#e04b3a', c2: '#b3372a', ab: 'none'  },
+  trio:   { label: 'The Trio', r: 5.5, mass: 0.85, c: '#4d9be6', c2: '#3573b3', ab: 'split' },
+  zip:    { label: 'Zip',      r: 6.5, mass: 0.95, c: '#f5c531', c2: '#c99a1d', ab: 'dash'  },
+  boomer: { label: 'Boomer',   r: 7,   mass: 1.25, c: '#4a4a58', c2: '#2e2e38', ab: 'boom'  },
+  willow: { label: 'Willow',   r: 7,   mass: 1.05, c: '#f6f1e3', c2: '#cfc6ad', ab: 'drop'  },
+  moe:    { label: 'Big Moe',  r: 10.5, mass: 2.6, c: '#a4693a', c2: '#7c4c26', ab: 'none'  }
 };
 
 function B(mat, x, y, w, h) {
@@ -40,83 +41,166 @@ function B(mat, x, y, w, h) {
            vx: 0, vy: 0, dead: false, falling: false };
 }
 function F(x, y) {
-  return { x: x, y: y, r: 8, hp: 4, dead: false, vy: 0,
+  return { x: x, y: y, r: 6.5, hp: 4, dead: false, vy: 0,
            falling: false, blink: (Math.random() * 200) | 0 };
 }
 
-/* ---------------- levels (vertical layouts) ----------------
-   Design rule (verified against the launch envelope): the sling
-   sits in a clear corridor on the LEFT (x < ~110); all ledges and
-   forts live to the RIGHT of it, so straight-up shots fly clean
-   and angled lobs arc over and drop into the open-top pens.
-   Every fox sits at y >= ~70 so nothing needs an impossible shot. */
+/* ---------------- levels (landscape layouts) ----------------
+   Sling at (58,176), ground top y=214, field 282 wide. Forts live
+   at x >= ~130. Foxes are exposed (open-top pens, tower tops) or
+   inside collapsible/blastable structures — solver-verified. */
 var LEVELS = [
-  {
+  { // 1 — two foxes behind a glass post; learn to drag & lob
     name: 'First Hop',
-    stars: [10000, 15000, 20000],
-    queue: ['rusty', 'zip'],
-    platforms: [{ x: 128, y: 190, w: 108, h: 10 }],
+    stars: [10000, 14000, 20000],
+    queue: ['rusty', 'rusty'],
+    platforms: [],
     make: function () { return {
       blocks: [
-        // open-top glass pen: foxes exposed from above
-        B('glass', 140, 160, 10, 30),
-        B('glass', 214, 160, 10, 30),
-        B('wood', 172, 176, 20, 14)
+        B('glass', 176, 184, 10, 30),
+        B('wood', 206, 200, 16, 14)
       ],
-      foxes: [F(161, 182), F(203, 182)]
+      foxes: [F(196, 207), F(232, 207)]
     }; }
   },
-  {
-    name: 'Twin Perches',
-    stars: [18000, 25000, 32000],
-    queue: ['rusty', 'trio', 'willow'],
-    platforms: [
-      { x: 118, y: 200, w: 118, h: 10 },
-      { x: 120, y: 122, w: 116, h: 10 }
-    ],
+  { // 2 — glass pen + a lookout tower
+    name: 'Glass House',
+    stars: [15000, 20000, 26000],
+    queue: ['rusty', 'zip', 'rusty'],
+    platforms: [],
     make: function () { return {
       blocks: [
-        // lower glass pen (open top)
-        B('glass', 132, 170, 10, 30),
-        B('glass', 212, 170, 10, 30),
-        B('wood', 167, 186, 20, 14),
-        // upper wood perch (open top)
-        B('wood', 138, 92, 10, 30),
-        B('wood', 208, 92, 10, 30),
-        B('wood', 170, 108, 16, 14)
+        B('glass', 150, 184, 10, 30),
+        B('glass', 196, 184, 10, 30),
+        B('wood', 236, 186, 14, 28)
       ],
-      foxes: [F(154, 192), F(200, 192), F(158, 114), F(196, 114)]
+      foxes: [F(170, 207), F(188, 207), F(243, 179)]
     }; }
   },
-  {
-    name: 'Stone Keep',
-    stars: [30000, 40000, 48000],
-    queue: ['zip', 'trio', 'boomer', 'moe'],
-    platforms: [
-      { x: 116, y: 206, w: 120, h: 10 },
-      { x: 118, y: 114, w: 118, h: 10 }
-    ],
+  { // 3 — spread-out targets; The Trio's split shines
+    name: 'Split Decision',
+    stars: [15000, 21000, 25500],
+    queue: ['trio', 'rusty', 'zip'],
+    platforms: [{ x: 150, y: 126, w: 70, h: 10 }],
     make: function () { return {
       blocks: [
-        // lower stone keep — fully roofed, needs Boomer's blast or Big Moe
-        B('stone', 138, 166, 12, 40),
-        B('stone', 202, 166, 12, 40),
-        B('stone', 132, 156, 92, 10),
-        // a lone sentry stand on the keep roof (exposed fox on top)
-        B('wood', 172, 142, 16, 14),
-        // upper glass watch post (open top) — zip / trio food
-        B('glass', 140, 84, 10, 30),
-        B('glass', 206, 84, 10, 30),
-        B('wood', 170, 100, 16, 14)
+        B('glass', 134, 184, 10, 30),
+        B('glass', 176, 184, 10, 30),
+        B('glass', 236, 190, 10, 24),
+        B('wood', 176, 112, 14, 14)
       ],
-      foxes: [F(160, 198), F(192, 198), F(180, 132), F(160, 106), F(196, 106)]
+      foxes: [F(158, 207), F(256, 207), F(162, 119)]
+    }; }
+  },
+  { // 4 — tall wood walls; Zip slices straight through
+    name: 'Woodpecker',
+    stars: [15000, 21000, 26000],
+    queue: ['zip', 'rusty', 'zip'],
+    platforms: [],
+    make: function () { return {
+      blocks: [
+        B('wood', 168, 164, 10, 50),
+        B('wood', 216, 164, 10, 50),
+        B('glass', 250, 196, 12, 18)
+      ],
+      foxes: [F(194, 207), F(238, 207), F(256, 189)]
+    }; }
+  },
+  { // 5 — a high ledge pen; Willow bombs it from above
+    name: 'Sky Ledge',
+    stars: [15000, 21000, 26000],
+    queue: ['rusty', 'willow', 'rusty'],
+    platforms: [{ x: 186, y: 118, w: 88, h: 10 }],
+    make: function () { return {
+      blocks: [
+        B('glass', 194, 88, 10, 30),
+        B('glass', 252, 88, 10, 30),
+        B('wood', 146, 190, 12, 24)
+      ],
+      foxes: [F(220, 111), F(238, 111), F(166, 207)]
+    }; }
+  },
+  { // 6 — two storeys; shatter the glass legs and it all comes down
+    name: 'Double Decker',
+    stars: [20000, 26000, 33000],
+    queue: ['rusty', 'zip', 'trio'],
+    platforms: [],
+    make: function () { return {
+      blocks: [
+        B('glass', 188, 174, 10, 40),
+        B('glass', 242, 174, 10, 40),
+        B('wood', 182, 164, 76, 10),
+        B('glass', 192, 134, 10, 30),
+        B('glass', 240, 134, 10, 30)
+      ],
+      foxes: [F(212, 207), F(228, 207), F(212, 157), F(228, 157)]
+    }; }
+  },
+  { // 7 — stone gate; Boomer's blast makes the introductions
+    name: 'Stone Gate',
+    stars: [15000, 22000, 29000],
+    queue: ['boomer', 'rusty', 'trio'],
+    platforms: [],
+    make: function () { return {
+      blocks: [
+        B('stone', 172, 166, 14, 48),
+        B('stone', 216, 190, 14, 24)
+      ],
+      foxes: [F(198, 207), F(244, 207), F(179, 159)]
+    }; }
+  },
+  { // 8 — foxes perched on towers; topple or snipe them
+    name: 'Fox Towers',
+    stars: [20000, 27000, 34000],
+    queue: ['trio', 'willow', 'zip'],
+    platforms: [],
+    make: function () { return {
+      blocks: [
+        B('wood', 176, 168, 12, 46),
+        B('wood', 226, 150, 12, 64),
+        B('glass', 258, 188, 10, 26)
+      ],
+      foxes: [F(182, 161), F(232, 143), F(204, 207), F(274, 207)]
+    }; }
+  },
+  { // 9 — a stone bunker; Big Moe simply does not care
+    name: 'Heavyweight',
+    stars: [20000, 28000, 36000],
+    queue: ['moe', 'rusty', 'trio'],
+    platforms: [],
+    make: function () { return {
+      blocks: [
+        B('stone', 184, 174, 12, 40),
+        B('stone', 240, 174, 12, 40),
+        B('stone', 178, 164, 80, 10),
+        B('wood', 208, 150, 14, 14)
+      ],
+      foxes: [F(210, 207), F(228, 207), F(215, 143), F(268, 207)]
+    }; }
+  },
+  { // 10 — everything at once: wall, stone keep, sky pen
+    name: 'The Carrot Vault',
+    stars: [25000, 35000, 46000],
+    queue: ['zip', 'trio', 'boomer', 'willow', 'moe'],
+    platforms: [{ x: 158, y: 112, w: 104, h: 10 }],
+    make: function () { return {
+      blocks: [
+        B('wood', 148, 170, 10, 44),
+        B('stone', 186, 174, 12, 40),
+        B('stone', 236, 174, 12, 40),
+        B('stone', 180, 164, 74, 10),
+        B('glass', 168, 82, 10, 30),
+        B('glass', 238, 82, 10, 30),
+        B('wood', 196, 98, 16, 14)
+      ],
+      foxes: [F(212, 207), F(228, 207), F(217, 157), F(186, 105), F(224, 105)]
     }; }
   }
 ];
 
 /* ---------------- state ---------------- */
 var cv, ctx, app;
-var save = { best: [0, 0, 0], stars: [0, 0, 0] };
+var save = { best: [], stars: [] };
 var scene = 'menu';                 // menu | play | end
 var lvIdx = 0, sel = 0;
 var platforms = [], blocks = [], foxes = [], projs = [], parts = [], texts = [];
@@ -126,39 +210,74 @@ var drag = null;                    // {dx,dy} pull from anchor
 var score = 0, shake = 0, bannerT = 0, hintT = 0, winT = 0, settleT = 0;
 var frame = 0, ended = false;
 var endPrimary = 'btnRetry';
+var rotated = false, scaleF = 1;    // set by fit(); used to map pointer coords
 
-/* ---------------- persistence (creationStorage w/ fallback) ---------------- */
+/* ---------------- persistence ----------------
+   Belt-and-braces: progress is written to BOTH the R1's
+   creationStorage (base64, async) and localStorage (sync) on
+   every save AND on pagehide, and on load both stores are read
+   and merged taking the best value per level — so whichever
+   store actually survived the session wins and neither can
+   regress the other. Arrays auto-resize to the level count. */
 var SAVEKEY = 'angry_rabbits_v1';
+
+function normalizeSave() {
+  if (!save || typeof save !== 'object') save = { best: [], stars: [] };
+  if (!save.best) save.best = [];
+  if (!save.stars) save.stars = [];
+  for (var i = 0; i < LEVELS.length; i++) {
+    save.best[i] = Math.max(0, save.best[i] | 0);
+    save.stars[i] = Math.min(3, Math.max(0, save.stars[i] | 0));
+  }
+  save.best.length = LEVELS.length;
+  save.stars.length = LEVELS.length;
+}
+
+function mergeSave(b) {         // take the max per level; never regress
+  if (!b || typeof b !== 'object') return;
+  var i;
+  if (b.best) for (i = 0; i < LEVELS.length; i++) {
+    save.best[i] = Math.max(save.best[i] | 0, b.best[i] | 0);
+  }
+  if (b.stars) for (i = 0; i < LEVELS.length; i++) {
+    save.stars[i] = Math.max(save.stars[i] | 0, b.stars[i] | 0);
+  }
+}
+
+function parseRaw(v) {          // accept base64-wrapped or plain JSON
+  if (!v) return null;
+  try { return JSON.parse(atob(v)); } catch (e) {}
+  try { return JSON.parse(v); } catch (e2) {}
+  return null;
+}
+
 function loadSave() {
+  normalizeSave();
   return new Promise(function (res) {
+    try { mergeSave(parseRaw(localStorage.getItem(SAVEKEY))); } catch (e) {}
+    var done = function () { normalizeSave(); res(); };
     try {
       if (window.creationStorage && window.creationStorage.plain) {
-        window.creationStorage.plain.getItem(SAVEKEY).then(function (v) {
-          try { if (v) save = merge(save, JSON.parse(atob(v))); } catch (e) {}
-          res();
-        }).catch(function () { res(); });
+        window.creationStorage.plain.getItem(SAVEKEY)
+          .then(function (v) { mergeSave(parseRaw(v)); done(); })
+          .catch(done);
         return;
       }
-      var v = localStorage.getItem(SAVEKEY);
-      if (v) save = merge(save, JSON.parse(v));
-    } catch (e) {}
-    res();
+    } catch (e2) {}
+    done();
   });
 }
+
 function writeSave() {
+  normalizeSave();
+  var s;
+  try { s = JSON.stringify(save); } catch (e) { return; }
+  try { localStorage.setItem(SAVEKEY, s); } catch (e1) {}
   try {
-    var s = JSON.stringify(save);
     if (window.creationStorage && window.creationStorage.plain) {
       window.creationStorage.plain.setItem(SAVEKEY, btoa(s));
-    } else {
-      localStorage.setItem(SAVEKEY, s);
     }
-  } catch (e) {}
-}
-function merge(a, b) {
-  if (b && b.best) a.best = b.best;
-  if (b && b.stars) a.stars = b.stars;
-  return a;
+  } catch (e2) {}
 }
 
 /* ---------------- tiny sound synth ---------------- */
@@ -298,9 +417,9 @@ function triggerAbility() {
         var cs = Math.cos(a), sn = Math.sin(a);
         projs.push(makeProj('trio', p.x, p.y,
           p.vx * cs - p.vy * sn, p.vx * sn + p.vy * cs,
-          { r: 5, mass: 0.55, small: true, abUsed: true }));
+          { r: 4, mass: 0.55, small: true, abUsed: true }));
       }
-      p.r = 5; p.mass = 0.55; p.small = true;
+      p.r = 4; p.mass = 0.55; p.small = true;
       sfx(700, 0.08, 'square', 0.05); sfx(900, 0.08, 'square', 0.04);
     } else if (ab === 'dash') {
       var s = Math.hypot(p.vx, p.vy) || 1;
@@ -312,7 +431,7 @@ function triggerAbility() {
       p.dead = true;
     } else if (ab === 'drop') {
       projs.push(makeProj('willow', p.x, p.y + 6, p.vx * 0.25, 2.5,
-        { bomb: true, r: 5, mass: 0.8, abUsed: true }));
+        { bomb: true, r: 4, mass: 0.8, abUsed: true }));
       p.vy = -6; p.vx *= 0.6;
       sfx(500, 0.1, 'triangle', 0.05);
     }
@@ -514,7 +633,7 @@ function stepFoxes() {
   for (var i = 0; i < foxes.length; i++) {
     var f = foxes[i];
     if (f.dead) continue;
-    var sup = findSupport(f.x - 8, 16, f.y + f.r, null);
+    var sup = findSupport(f.x - 7, 14, f.y + f.r, null);
     if (sup !== null) {
       if (f.falling && f.vy > 4.4) { killFox(f); continue; }
       f.falling = false; f.vy = 0; f.y = sup - f.r;
@@ -649,16 +768,23 @@ function buildMenu() {
     var starTxt = '';
     for (var s = 0; s < 3; s++) starTxt += s < save.stars[i] ? '\u2605' : '\u2606';
     div.innerHTML =
-      '<span class="lname">' + (i + 1) + '. ' + L.name + '</span>' +
-      '<span class="lstars">' + (locked ? '\uD83D\uDD12' : starTxt) + '</span>' +
-      (save.best[i] ? '<span class="lbest">best ' + save.best[i] + '</span>' : '');
+      '<span class="n">' + (i + 1) + '</span>' +
+      '<span class="st">' + (locked ? '\uD83D\uDD12' : starTxt) + '</span>';
     div.addEventListener('click', function () { sel = i; refreshSel(); startSelected(); });
     list.appendChild(div);
   });
+  refreshSel();
 }
 function refreshSel() {
   var els = document.querySelectorAll('.lvl');
   for (var i = 0; i < els.length; i++) els[i].classList.toggle('sel', i === sel);
+  var info = document.getElementById('lvlInfo');
+  if (info) {
+    var L = LEVELS[sel];
+    var locked = sel > 0 && save.stars[sel - 1] === 0;
+    info.textContent = (sel + 1) + '. ' + L.name +
+      (locked ? ' \u00b7 locked' : (save.best[sel] ? ' \u00b7 best ' + save.best[sel] : ''));
+  }
 }
 function moveSel(d) {
   sel = (sel + d + LEVELS.length) % LEVELS.length;
@@ -707,9 +833,16 @@ function showEnd(win, st, unused) {
 
 /* ---------------- input ---------------- */
 function ptFromEvent(e) {
-  var rect = cv.getBoundingClientRect();
-  return { x: (e.clientX - rect.left) / (rect.width / W),
-           y: (e.clientY - rect.top) / (rect.height / H) };
+  // Map screen coords into game space, accounting for the 90deg
+  // rotation applied when the viewport is portrait (the R1).
+  var rect = app.getBoundingClientRect();
+  var cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+  if (rotated) {
+    return { x: (e.clientY - cy) / scaleF + W / 2,
+             y: H / 2 - (e.clientX - cx) / scaleF };
+  }
+  return { x: (e.clientX - cx) / scaleF + W / 2,
+           y: (e.clientY - cy) / scaleF + H / 2 };
 }
 
 function bindInput() {
@@ -718,7 +851,7 @@ function bindInput() {
     if (scene !== 'play') return;
     var pt = ptFromEvent(e);
     if (sub === 'ready' && loaded &&
-        Math.hypot(pt.x - SL.x, pt.y - SL.y) < 36) {
+        Math.hypot(pt.x - SL.x, pt.y - SL.y) < 30) {
       sub = 'aiming';
       drag = { dx: 0, dy: 0 };
       if (cv.setPointerCapture) { try { cv.setPointerCapture(e.pointerId); } catch (err) {} }
@@ -777,6 +910,11 @@ function bindInput() {
     else if (e.key === 'ArrowDown') { if (scene === 'menu') moveSel(1); }
   });
 
+  window.addEventListener('pagehide', writeSave);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden' || document.hidden) writeSave();
+  });
+
   document.getElementById('btnRetry').addEventListener('click', function () { startLevel(lvIdx); });
   document.getElementById('btnNext').addEventListener('click', function () {
     startLevel(Math.min(lvIdx + 1, LEVELS.length - 1));
@@ -785,7 +923,7 @@ function bindInput() {
 }
 
 /* ---------------- drawing ---------------- */
-var CLOUDS = [{ x: 42, y: 46, s: 1 }, { x: 186, y: 74, s: 0.75 }, { x: 108, y: 22, s: 0.6 }];
+var CLOUDS = [{ x: 64, y: 40, s: 1 }, { x: 158, y: 24, s: 0.7 }, { x: 236, y: 52, s: 0.85 }];
 var SPECK = [];
 (function () { for (var i = 0; i < 14; i++) SPECK.push({ x: (i * 53 + 9) % W, y: GY + 8 + ((i * 29) % 14) }); })();
 
@@ -803,9 +941,9 @@ function drawSky() {
   ctx.fillRect(0, 0, W, H);
   // sun
   ctx.fillStyle = 'rgba(255,224,138,0.45)';
-  ctx.beginPath(); ctx.arc(212, 24, 22, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(W - 28, 26, 22, 0, 7); ctx.fill();
   ctx.fillStyle = '#ffe08a';
-  ctx.beginPath(); ctx.arc(212, 24, 13, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(W - 28, 26, 13, 0, 7); ctx.fill();
   // clouds
   ctx.fillStyle = 'rgba(255,255,255,0.85)';
   for (var i = 0; i < CLOUDS.length; i++) {
@@ -818,9 +956,9 @@ function drawSky() {
   }
   // distant hills
   ctx.fillStyle = '#8ec9a0';
-  ellipsePath(50, GY + 8, 90, 26); ctx.fill();
+  ellipsePath(70, GY + 8, 95, 26); ctx.fill();
   ctx.fillStyle = '#7bbd8f';
-  ellipsePath(195, GY + 10, 100, 30); ctx.fill();
+  ellipsePath(215, GY + 10, 105, 30); ctx.fill();
   // ground
   ctx.fillStyle = '#5fae3c';
   ctx.fillRect(0, GY, W, 7);
@@ -1006,12 +1144,14 @@ function drawTraj() {
   if (!drag) return;
   var x = SL.x + drag.dx, y = SL.y + drag.dy;
   var vx = -drag.dx * POWER, vy = -drag.dy * POWER;
-  ctx.fillStyle = 'rgba(255,255,255,0.95)';
-  for (var i = 0; i < 34; i++) {
+  ctx.lineWidth = 1;
+  for (var i = 0; i < 46; i++) {
     vy += GRAV; x += vx; y += vy;
-    if (i % 3 === 0) {
-      ctx.globalAlpha = Math.max(0.05, 0.9 - i * 0.024);
-      ctx.beginPath(); ctx.arc(x, y, 1.6, 0, 7); ctx.fill();
+    if (i % 2 === 0) {
+      ctx.globalAlpha = Math.max(0.4, 1 - i * 0.014);
+      ctx.beginPath(); ctx.arc(x, y, 2.3, 0, 7);
+      ctx.fillStyle = '#fff'; ctx.fill();
+      ctx.strokeStyle = 'rgba(58,42,24,0.85)'; ctx.stroke();
     }
     if (y > GY) break;
   }
@@ -1040,8 +1180,8 @@ function drawLoaded() {
 function drawQueueMinis() {
   for (var i = 0; i < queue.length; i++) {
     var k = queue[i];
-    var r = Math.min(7, TYPES[k].r * 0.72);
-    drawRabbit(k, W - 18 - i * 20, GY - r + 2, 0, r);
+    var r = Math.min(5.5, TYPES[k].r * 0.72);
+    drawRabbit(k, 12 + i * 15, GY - r + 2, 0, r);
   }
 }
 
@@ -1092,7 +1232,7 @@ function drawHUD() {
     ctx.textAlign = 'center';
     ctx.font = '700 9px sans-serif';
     ctx.fillStyle = 'rgba(255,248,230,0.92)';
-    ctx.fillText('drag the rabbit, release to fire', W / 2, 266);
+    ctx.fillText('drag the rabbit, release to fire', W / 2, GY + 14);
   }
   if (sub === 'flight') {
     var showTap = false;
@@ -1142,16 +1282,21 @@ function draw() {
   drawTexts();
   ctx.restore();
   if (scene === 'menu') {
-    drawRabbit('rusty', 88, GY - 9, 0, 9);
-    drawFox({ x: 184, y: GY - 8, r: 8, blink: 40 });
+    drawRabbit('rusty', 58, GY - 7, 0, 7);
+    drawFox({ x: 246, y: GY - 6.5, r: 6.5, blink: 40 });
   }
   drawHUD();
 }
 
 /* ---------------- boot ---------------- */
 function fit() {
-  var s = Math.max(1, Math.floor(Math.min(window.innerWidth / W, window.innerHeight / H) * 2) / 2);
-  app.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
+  var iw = window.innerWidth, ih = window.innerHeight;
+  rotated = ih > iw;              // portrait viewport (the R1) -> rotate 90deg
+  var s = rotated ? Math.min(iw / H, ih / W) : Math.min(iw / W, ih / H);
+  s = Math.max(0.5, Math.floor(s * 4) / 4);
+  scaleF = s;
+  app.style.transform = 'translate(-50%, -50%)' +
+    (rotated ? ' rotate(90deg)' : '') + ' scale(' + s + ')';
 }
 
 function loop() {

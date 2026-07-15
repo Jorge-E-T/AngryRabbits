@@ -1,4 +1,4 @@
-/* Angry Rabbits — R1 creation (240x282) */
+/* Angry Rabbits — R1 creation, rotated to landscape (282x240 logical) */
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body {
@@ -14,7 +14,7 @@ body {
 
 #app {
   position: absolute; left: 50%; top: 50%;
-  width: 240px; height: 282px;
+  width: 282px; height: 240px;      /* landscape; JS rotates 90deg on portrait screens */
   transform: translate(-50%, -50%);
   transform-origin: center;
   overflow: hidden;
@@ -33,7 +33,7 @@ canvas { display: block; touch-action: none; }
 .overlay.show { opacity: 1; pointer-events: auto; }
 
 .card {
-  width: 210px;
+  width: 252px;
   background: #f7efd9;
   border: 3px solid #6b4423;
   border-radius: 10px;
@@ -59,20 +59,25 @@ h1 span {
 }
 .tag { font-size: 9px; margin: 5px 0 8px; color: #7a6a4a; }
 
-#levelList { display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px; }
+#levelList {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+}
 .lvl {
   background: #fff8e8;
   border: 2px solid #d8c9a3;
   border-radius: 7px;
-  padding: 5px 8px 4px;
-  text-align: left;
-  font-size: 11px; font-weight: 700;
+  padding: 3px 0 2px;
+  text-align: center;
   cursor: pointer;
 }
 .lvl.sel { border-color: #c94f2e; box-shadow: 0 0 0 1px #c94f2e; }
-.lvl.locked { opacity: .5; }
-.lstars { float: right; color: #f5a623; letter-spacing: 1px; }
-.lbest { display: block; font-size: 8px; font-weight: 600; color: #8a7a58; }
+.lvl.locked { opacity: .45; }
+.lvl .n { display: block; font-weight: 900; font-size: 12px; line-height: 1.1; }
+.lvl .st { display: block; font-size: 7px; color: #f5a623; line-height: 1.2; height: 9px; }
+.linfo { font-size: 9px; font-weight: 700; color: #5a4a30; margin-bottom: 6px; min-height: 11px; }
 
 .hint { font-size: 8px; line-height: 1.5; color: #7a6a4a; }
 
