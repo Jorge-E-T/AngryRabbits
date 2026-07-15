@@ -1,0 +1,109 @@
+/* Angry Rabbits — R1 creation (240x282) */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: #14231a;
+  overflow: hidden;
+}
+body {
+  font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-user-select: none; user-select: none;
+  touch-action: none;
+}
+
+#app {
+  position: absolute; left: 50%; top: 50%;
+  width: 240px; height: 282px;
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+  overflow: hidden;
+  background: #87c7ea;
+}
+canvas { display: block; touch-action: none; }
+
+/* ---------- overlays ---------- */
+.overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(20, 35, 26, 0.55);
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s ease;
+}
+.overlay.show { opacity: 1; pointer-events: auto; }
+
+.card {
+  width: 210px;
+  background: #f7efd9;
+  border: 3px solid #6b4423;
+  border-radius: 10px;
+  padding: 10px 10px 12px;
+  text-align: center;
+  color: #3a2a18;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, .25);
+  transform: translateY(8px);
+  transition: transform .25s ease;
+}
+.overlay.show .card { transform: translateY(0); }
+
+h1 {
+  font-size: 25px; font-weight: 900;
+  letter-spacing: 1px; line-height: .92;
+  color: #c94f2e;
+  text-shadow: 1px 2px 0 #6b4423;
+}
+h1 span {
+  display: block;
+  font-size: 19px; letter-spacing: 4px;
+  color: #3a2a18; text-shadow: none;
+}
+.tag { font-size: 9px; margin: 5px 0 8px; color: #7a6a4a; }
+
+#levelList { display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px; }
+.lvl {
+  background: #fff8e8;
+  border: 2px solid #d8c9a3;
+  border-radius: 7px;
+  padding: 5px 8px 4px;
+  text-align: left;
+  font-size: 11px; font-weight: 700;
+  cursor: pointer;
+}
+.lvl.sel { border-color: #c94f2e; box-shadow: 0 0 0 1px #c94f2e; }
+.lvl.locked { opacity: .5; }
+.lstars { float: right; color: #f5a623; letter-spacing: 1px; }
+.lbest { display: block; font-size: 8px; font-weight: 600; color: #8a7a58; }
+
+.hint { font-size: 8px; line-height: 1.5; color: #7a6a4a; }
+
+h2 { font-size: 17px; font-weight: 900; color: #c94f2e; margin-bottom: 2px; }
+
+#starsBox { font-size: 0; margin: 4px 0 6px; height: 30px; }
+.star {
+  display: inline-block;
+  font-size: 26px; line-height: 30px; margin: 0 3px;
+  color: #d8c9a3;
+  transform: scale(.6);
+  transition: transform .3s cubic-bezier(.34, 1.56, .64, 1), color .3s;
+}
+.star.on { color: #f5a623; transform: scale(1.15); }
+
+#endLines { font-size: 12px; margin-bottom: 8px; }
+#endLines .bonus { font-size: 10px; color: #4f8a3d; font-weight: 700; }
+#endLines .best { font-size: 9px; color: #8a7a58; }
+
+.btnrow { display: flex; gap: 6px; justify-content: center; }
+button {
+  flex: 1; min-height: 30px;
+  border: 2px solid #6b4423; border-radius: 8px;
+  background: #e8843a; color: #fff;
+  font-weight: 800; font-size: 12px; font-family: inherit;
+  box-shadow: 0 2px 0 #6b4423;
+  cursor: pointer;
+}
+button:active { transform: translateY(2px); box-shadow: none; }
+#btnMenu { background: #8a9a6a; }
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay, .card, .star { transition: none; }
+}

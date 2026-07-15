@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=240, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Angry Rabbits</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="game"></canvas>
+
+  <!-- Level select -->
+  <div id="menu" class="overlay show">
+    <div class="card">
+      <h1>ANGRY<span>RABBITS</span></h1>
+      <p class="tag">The foxes stole the carrot stash. Get it back.</p>
+      <div id="levelList"></div>
+      <p class="hint">drag rabbit &middot; release to fire<br>tap mid&#8209;air / side button = ability<br>hold side button = restart level</p>
+    </div>
+  </div>
+
+  <!-- Level end card -->
+  <div id="endcard" class="overlay">
+    <div class="card">
+      <h2 id="endTitle">Fort Smashed!</h2>
+      <div id="starsBox"></div>
+      <div id="endLines"></div>
+      <div class="btnrow">
+        <button id="btnRetry">Retry</button>
+        <button id="btnNext">Next</button>
+        <button id="btnMenu">Menu</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
