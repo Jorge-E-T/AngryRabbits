@@ -38,7 +38,8 @@ var TYPES = {
 
 function B(mat, x, y, w, h) {
   return { mat: mat, x: x, y: y, w: w, h: h, hp: MATS[mat].hp,
-           vx: 0, vy: 0, dead: false, falling: false };
+           vx: 0, vy: 0, dead: false, falling: false,
+           ang: 0, angv: 0, tipT: 0 };
 }
 function F(x, y) {
   return { x: x, y: y, r: 6.5, hp: 4, dead: false, vy: 0,
@@ -286,6 +287,7 @@ function unlockAudio() {
   try {
     if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
     if (AC && AC.state === 'suspended') AC.resume();
+    startMusic();
   } catch (e) {}
 }
 function sfx(freq, dur, type, vol) {
@@ -299,6 +301,38 @@ function sfx(freq, dur, type, vol) {
     o.connect(g); g.connect(AC.destination);
     o.start(); o.stop(AC.currentTime + dur + 0.02);
   } catch (e) {}
+}
+
+/* ---------------- looping music ---------------- */
+var musicOn = false, musicStep = 0;
+var MELODY = [523, 659, 784, 659, 587, 784, 880, 784,
+              523, 659, 784, 880, 1047, 880, 784, 659,
+              523, 659, 784, 659, 587, 740, 880, 740,
+              659, 784, 880, 1047, 784, 659, 587, 523];
+var BASSLN = [131, 131, 196, 196, 147, 147, 220, 220,
+              131, 131, 196, 196, 165, 165, 196, 196];
+function note(freq, t, dur, type, vol) {
+  try {
+    var o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  } catch (e) {}
+}
+function musicTick() {
+  if (!AC || AC.state !== 'running') return;
+  var t = AC.currentTime;
+  note(MELODY[musicStep % MELODY.length], t, 0.16, 'triangle', 0.022);
+  if (musicStep % 2 === 0) note(BASSLN[(musicStep >> 1) % BASSLN.length], t, 0.3, 'sine', 0.03);
+  if (musicStep % 4 === 2) note(2400, t, 0.03, 'square', 0.008);
+  musicStep++;
+}
+function startMusic() {
+  if (musicOn || !AC) return;
+  musicOn = true;
+  setInterval(musicTick, 190);
 }
 
 /* ---------------- helpers ---------------- */
@@ -497,6 +531,12 @@ function collideProj(p) {
     if (impact > 1) {
       damageBlock(b, impact * 2 * bonus);
       b.vx += -hit.nx * impact * 0.5;
+      // spin: a hit above centre tips the block WITH the shot,
+      // a hit below centre kicks the base out and tips it the OTHER way
+      if (b.h > b.w && Math.abs(hit.nx) > 0.4) {
+        var hitLever = ((b.y + b.h / 2) - p.y) / (b.h / 2);
+        b.angv += (-hit.nx) * hitLever * impact * 0.03;
+      }
       if (impact > 5) shake = Math.min(6, shake + 2);
       if (b.dead) {
         // smashed clean through — keep most momentum
@@ -555,11 +595,86 @@ function findSupport(x, w, bottom, self) {
   return best;
 }
 
+/* where is this block actually held up? returns the left/right
+   edges of everything solid under it, or null if nothing */
+function supportSpan(b) {
+  var lo = null, hi = null, bottom = b.y + b.h;
+  function consider(sx, sw, top) {
+    var a = Math.max(b.x, sx), z = Math.min(b.x + b.w, sx + sw);
+    if (z - a < 2) return;
+    if (bottom >= top - 3 && bottom <= top + 7) {
+      if (lo === null || a < lo) lo = a;
+      if (hi === null || z > hi) hi = z;
+    }
+  }
+  for (var i = 0; i < platforms.length; i++) consider(platforms[i].x, platforms[i].w, platforms[i].y);
+  for (var j = 0; j < blocks.length; j++) {
+    var o = blocks[j];
+    if (o === b || o.dead || (o.falling && o.vy > 1.5)) continue;
+    consider(o.x, o.w, o.y);
+  }
+  return lo === null ? null : { lo: lo, hi: hi };
+}
+
+/* a standing piece tipped past the point of no return: lay it
+   down flat on the side it fell toward and slam what's under it */
+function toppleFlat(b) {
+  var dir = b.ang > 0 ? 1 : -1;
+  var v = Math.abs(b.angv) * 26 + 3;
+  var nw = b.h, nh = b.w;
+  var nx = dir > 0 ? b.x + b.w : b.x - nw;
+  b.x = Math.max(0, Math.min(W - nw, nx));
+  b.y = b.y + b.h - nh;
+  b.w = nw; b.h = nh;
+  b.ang = 0; b.angv = 0; b.tipT = 0;
+  b.vx = dir * 0.4; b.vy = 2; b.falling = true;
+  damageBlock(b, v * 0.8);
+  slamZone(b, v);
+  shake = Math.min(shake + 3, 7);
+  sfx(85, 0.09, 'square', 0.05);
+}
+
+/* damage everything caught under a toppled piece */
+function slamZone(b, v) {
+  var i, x1 = b.x - 2, x2 = b.x + b.w + 2, y2 = b.y + b.h + 8;
+  for (i = 0; i < blocks.length; i++) {
+    var o = blocks[i];
+    if (o === b || o.dead) continue;
+    if (o.x < x2 && o.x + o.w > x1 && o.y < y2 && o.y + o.h > b.y - 4) {
+      damageBlock(o, v * 1.5);
+    }
+  }
+  for (i = 0; i < foxes.length; i++) {
+    var f = foxes[i];
+    if (f.dead) continue;
+    if (f.x + f.r > x1 && f.x - f.r < x2 && f.y - f.r < y2 && f.y + f.r > b.y - 4) {
+      killFox(f);
+    }
+  }
+}
+
 function stepBlocks() {
   for (var i = 0; i < blocks.length; i++) {
     var b = blocks[i];
     if (b.dead) continue;
     var sup = findSupport(b.x, b.w, b.y + b.h, b);
+
+    // balance: if the centre of mass hangs past every support,
+    // the piece goes over the edge instead of hovering
+    if (sup !== null) {
+      var span = supportSpan(b);
+      var cx = b.x + b.w / 2;
+      if (span && (cx < span.lo - 2 || cx > span.hi + 2)) {
+        b.tipT = (b.tipT || 0) + 1;
+        if (b.tipT > 5) {
+          sup = null;
+          var td = cx > span.hi ? 1 : -1;
+          b.vx += td * 0.5;
+          b.angv += td * 0.02;
+        }
+      } else b.tipT = 0;
+    }
+
     if (sup !== null) {
       if (b.falling && b.vy > 2.4) landImpact(b);
       b.falling = false;
@@ -567,10 +682,30 @@ function stepBlocks() {
       b.y = sup - b.h;
       b.vx *= 0.86;
       if (Math.abs(b.vx) < 0.06) b.vx = 0;
+
+      // toppling: standing pieces wobble back from small knocks
+      // and fall right over from big ones
+      if (b.h > b.w) {
+        b.ang += b.angv;
+        b.angv *= 0.94;
+        var crit = Math.atan2(b.w, b.h);
+        if (Math.abs(b.ang) > 0.01) {
+          var tq = 0.0045 * (b.h / Math.max(b.w, 1));
+          if (Math.abs(b.ang) > crit) b.angv += (b.ang > 0 ? 1 : -1) * tq;
+          else b.angv += (b.ang > 0 ? -1 : 1) * tq * 0.25;
+        }
+        if (Math.abs(b.ang) < 0.015 && Math.abs(b.angv) < 0.004) { b.ang = 0; b.angv = 0; }
+        if (Math.abs(b.ang) > 1.2) { toppleFlat(b); continue; }
+      } else {
+        b.ang *= 0.7;
+        if (Math.abs(b.ang) < 0.01) b.ang = 0;
+      }
     } else {
       b.falling = true;
       b.vy += GRAV;
       if (b.vy > 8) b.vy = 8;
+      b.ang += b.angv;
+      b.angv *= 0.985;
     }
     b.x += b.vx;
     b.y += b.vy;
@@ -635,7 +770,11 @@ function stepFoxes() {
     if (f.dead) continue;
     var sup = findSupport(f.x - 7, 14, f.y + f.r, null);
     if (sup !== null) {
-      if (f.falling && f.vy > 4.4) { killFox(f); continue; }
+      if (f.falling && f.vy > 1.8) {
+        damageFox(f, (f.vy - 1.4) * 2.2);
+        if (f.dead) continue;
+        spawnParts(f.x, f.y + f.r, 3, '#e8843a', 1.2);
+      }
       f.falling = false; f.vy = 0; f.y = sup - f.r;
     } else {
       f.falling = true;
@@ -983,6 +1122,12 @@ function drawPlatforms() {
 
 function drawBlock(b) {
   var m = MATS[b.mat];
+  ctx.save();
+  if (b.ang) {
+    ctx.translate(b.x + b.w / 2, b.y + b.h);
+    ctx.rotate(b.ang);
+    ctx.translate(-(b.x + b.w / 2), -(b.y + b.h));
+  }
   ctx.fillStyle = b.mat === 'glass' ? 'rgba(185,225,245,0.8)' : m.c1;
   ctx.fillRect(b.x, b.y, b.w, b.h);
   ctx.strokeStyle = m.c2; ctx.lineWidth = 1;
@@ -1007,6 +1152,7 @@ function drawBlock(b) {
   var ratio = b.hp / MATS[b.mat].hp;
   if (ratio < 0.66) drawCrack(b, 1);
   if (ratio < 0.33) drawCrack(b, -1);
+  ctx.restore();
 }
 function drawCrack(b, dir) {
   ctx.strokeStyle = 'rgba(30,22,14,0.65)'; ctx.lineWidth = 1;
@@ -1028,11 +1174,17 @@ function drawFox(f) {
   var s;
   for (var i = 0; i < 2; i++) {
     s = i === 0 ? -1 : 1;
+    var tw = Math.sin(frame * 0.11 + f.blink + i * 2.3);
+    tw = tw > 0.82 ? (tw - 0.82) * 2.4 : 0;
+    ctx.save();
+    ctx.translate(s * r * 0.5, -r * 0.55);
+    ctx.rotate(s * tw * 0.45);
     ctx.beginPath();
-    ctx.moveTo(s * r * 0.9, -r * 0.4);
-    ctx.lineTo(s * r * 0.55, -r * 1.35);
-    ctx.lineTo(s * r * 0.15, -r * 0.75);
+    ctx.moveTo(s * r * 0.4, r * 0.15);
+    ctx.lineTo(s * r * 0.1, -r * 1.25);
+    ctx.lineTo(-s * r * 0.35, -r * 0.2);
     ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.restore();
   }
   ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill(); ctx.stroke();
   ctx.fillStyle = '#fdf3e3';
@@ -1071,7 +1223,7 @@ function drawRabbit(key, x, y, rot, r) {
   for (var i = 0; i < 2; i++) {
     s = i === 0 ? -1 : 1;
     ctx.save();
-    ctx.rotate(s * 0.22);
+    ctx.rotate(s * (0.22 + Math.sin(frame * 0.13 + s * 1.7) * 0.08));
     ctx.fillStyle = t.c; ctx.strokeStyle = t.c2; ctx.lineWidth = 1;
     ellipsePath(s * r * 0.42, -r * 1.5, er, r * 1.05); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#f4a9b8';
@@ -1083,16 +1235,24 @@ function drawRabbit(key, x, y, rot, r) {
   ctx.fillStyle = 'rgba(255,255,255,0.55)';
   ellipsePath(0, r * 0.38, r * 0.55, r * 0.42); ctx.fill();
   var ex = r * 0.36, ey = -r * 0.18, es = Math.max(1.6, r * 0.24);
-  ctx.fillStyle = '#fff';
-  ctx.beginPath();
-  ctx.arc(-ex, ey, es, 0, 7);
-  ctx.arc(ex, ey, es, 0, 7);
-  ctx.fill();
-  ctx.fillStyle = '#222';
-  ctx.beginPath();
-  ctx.arc(-ex + es * 0.3, ey, es * 0.45, 0, 7);
-  ctx.arc(ex + es * 0.3, ey, es * 0.45, 0, 7);
-  ctx.fill();
+  if ((frame + ((r * 37) | 0)) % 200 < 8) {
+    ctx.strokeStyle = '#33222a'; ctx.lineWidth = 1.1; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-ex - es * 0.7, ey); ctx.lineTo(-ex + es * 0.7, ey);
+    ctx.moveTo(ex - es * 0.7, ey); ctx.lineTo(ex + es * 0.7, ey);
+    ctx.stroke();
+  } else {
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(-ex, ey, es, 0, 7);
+    ctx.arc(ex, ey, es, 0, 7);
+    ctx.fill();
+    ctx.fillStyle = '#222';
+    ctx.beginPath();
+    ctx.arc(-ex + es * 0.3, ey, es * 0.45, 0, 7);
+    ctx.arc(ex + es * 0.3, ey, es * 0.45, 0, 7);
+    ctx.fill();
+  }
   ctx.strokeStyle = '#33222a'; ctx.lineWidth = Math.max(1.2, r * 0.16); ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.moveTo(-ex - es, ey - es * 1.4); ctx.lineTo(-ex + es * 0.7, ey - es * 0.5);
