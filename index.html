@@ -10,13 +10,19 @@
 <div id="app">
   <canvas id="game"></canvas>
 
+  <!-- Splash screen -->
+  <div id="splash" class="overlay show splashlay">
+    <button id="btnStart">START</button>
+  </div>
+
   <!-- Level select -->
-  <div id="menu" class="overlay show">
+  <div id="menu" class="overlay">
     <div class="card">
       <h1>ANGRY<span>RABBITS</span></h1>
       <p class="tag">The foxes stole the carrot stash. Get it back.</p>
       <div id="levelList"></div>
       <p id="lvlInfo" class="linfo"></p>
+      <button id="btnMusic" class="musicbtn">Music: ON</button>
       <p class="hint">drag rabbit &middot; release to fire<br>tap mid&#8209;air / side button = ability<br>hold side button = restart level</p>
     </div>
   </div>

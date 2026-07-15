@@ -15,7 +15,7 @@ body {
 #app {
   position: absolute; left: 50%; top: 50%;
   width: 282px; height: 240px;      /* landscape; JS rotates 90deg on portrait screens */
-  transform: translate(50%, 50%);
+  transform: translate(-50%, -50%);
   transform-origin: center;
   overflow: hidden;
   background: #87c7ea;
@@ -34,6 +34,9 @@ canvas { display: block; touch-action: none; }
 
 .card {
   width: 252px;
+  max-height: 228px;
+  overflow-y: auto;
+  touch-action: pan-y;
   background: #f7efd9;
   border: 3px solid #6b4423;
   border-radius: 10px;
@@ -109,6 +112,29 @@ button {
 button:active { transform: translateY(2px); box-shadow: none; }
 #btnMenu { background: #8a9a6a; }
 
+/* ---------- splash screen ---------- */
+.splashlay { background: none; align-items: flex-end; padding-bottom: 16px; }
+#btnStart {
+  flex: none;
+  padding: 8px 34px;
+  font-size: 16px;
+  letter-spacing: 2px;
+  border-radius: 12px;
+  animation: pulse 1.3s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+.musicbtn {
+  flex: none;
+  margin-bottom: 6px;
+  padding: 2px 12px;
+  font-size: 9px;
+  min-height: 20px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .overlay, .card, .star { transition: none; }
+  #btnStart { animation: none; }
 }
