@@ -23,7 +23,8 @@ var SL = { x: 58, y: 176 };             // slingshot anchor (left side)
 var MATS = {
   wood:  { hp: 20, score: 500, c1: '#c98a4b', c2: '#9a6630' },
   glass: { hp: 10, score: 300, c1: '#bfe3f5', c2: '#7fb8d8' },
-  stone: { hp: 45, score: 800, c1: '#a2a8b0', c2: '#6f757e' }
+  stone: { hp: 45, score: 800, c1: '#a2a8b0', c2: '#6f757e' },
+  tnt:   { hp: 8,  score: 400, c1: '#d94f3a', c2: '#8f2a1c' }
 };
 
 /* Original rabbit roster — one per classic ability archetype */
@@ -140,7 +141,7 @@ var LEVELS = [
     queue: ['zip', 'trio', 'boomer', 'moe'],
     platforms: [{ x: 158, y: 112, w: 104, h: 10 }],
     make: function () { return {
-      blocks: [ B('wood', 148, 170, 10, 44), B('stone', 186, 174, 12, 40), B('stone', 236, 174, 12, 40),
+      blocks: [ B('wood', 148, 170, 10, 44), B('tnt', 162, 200, 14, 14), B('stone', 186, 174, 12, 40), B('stone', 236, 174, 12, 40),
                 B('stone', 180, 164, 74, 10), B('glass', 168, 82, 10, 30), B('glass', 238, 82, 10, 30),
                 B('wood', 196, 98, 16, 14) ],
       foxes: [F(212, 207), F(228, 207), F(217, 157), F(186, 105), F(224, 105)]
@@ -205,7 +206,7 @@ var LEVELS = [
     make: function () { return {
       blocks: [ B('stone', 150, 174, 12, 40), B('stone', 196, 174, 12, 40), B('stone', 144, 164, 70, 10),
                 B('stone', 228, 174, 12, 40), B('stone', 264, 174, 12, 40), B('stone', 224, 164, 56, 10),
-                B('wood', 126, 192, 12, 22) ],
+                B('wood', 126, 192, 12, 22), B('tnt', 212, 200, 14, 14) ],
       foxes: [F(170, 207), F(186, 207), F(252, 207), F(179, 157), F(252, 157), F(132, 185)]
     }; }
   },
@@ -289,7 +290,7 @@ var LEVELS = [
     queue: ['trio', 'moe', 'willow', 'boomer'],
     platforms: [ { x: 150, y: 128, w: 50, h: 10 }, { x: 236, y: 128, w: 46, h: 10 } ],
     make: function () { return {
-      blocks: [ B('wood', 192, 118, 52, 10), B('stone', 208, 102, 20, 16),
+      blocks: [ B('wood', 192, 118, 52, 10), B('tnt', 208, 102, 20, 16),
                 B('glass', 188, 184, 10, 30), B('glass', 242, 184, 10, 30) ],
       foxes: [F(210, 207), F(226, 207), F(262, 207), F(166, 121), F(264, 121), F(218, 95)]
     }; }
@@ -323,7 +324,7 @@ var LEVELS = [
                 B('glass', 154, 164, 110, 10),
                 B('glass', 176, 134, 10, 30), B('glass', 232, 134, 10, 30),
                 B('glass', 170, 124, 78, 10),
-                B('glass', 200, 108, 18, 16) ],
+                B('glass', 200, 108, 18, 16), B('tnt', 236, 200, 12, 14) ],
       foxes: [F(184, 207), F(228, 207), F(164, 157), F(210, 157), F(256, 157), F(226, 117), F(209, 101)]
     }; }
   },
@@ -360,6 +361,104 @@ var LEVELS = [
     }; }
   }
 ];
+
+/* ---------------- procedural levels 31-100 ----------------
+   A seeded generator: level N is built from the number N, so
+   everyone gets the same level N every time. Difficulty scales
+   with N: more foxes, more stone, TNT caches, sky ledges. */
+function mkRand(seed) {
+  var s = seed >>> 0;
+  return function () {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+var GEN_A = ['Fox', 'Bramble', 'Thistle', 'Boulder', 'Timber', 'Clover', 'Ember', 'Shadow', 'Windy', 'Mossy'];
+var GEN_B = ['Hollow', 'Keep', 'Ridge', 'Outpost', 'Den', 'Fort', 'Heights', 'Crossing', 'Bastion', 'Perch'];
+
+function genLevel(n) {
+  var rnd = mkRand(n * 7919 + 17);
+  var dif = (n - 30) / 70;
+  var blocks = [], foxes = [], platforms = [];
+  var mats = dif < 0.25 ? ['glass', 'wood'] :
+             dif < 0.6 ? ['glass', 'wood', 'stone'] : ['wood', 'stone', 'stone'];
+  function mat() { return mats[(rnd() * mats.length) | 0]; }
+  var x = 136 + ((rnd() * 14) | 0);
+  var wantFox = 4 + Math.round(dif * 5);
+  var guard = 0;
+  while (foxes.length < wantFox && x < 214 && guard++ < 30) {
+    var roll = rnd();
+    if (roll < 0.22) {                              // open-top pen
+      var m1 = mat();
+      var wide = rnd() < 0.5;
+      blocks.push(B(m1, x, 184, 10, 30));
+      foxes.push(F(x + 21, 207));
+      if (wide) foxes.push(F(x + 37, 207));
+      blocks.push(B(m1, x + (wide ? 46 : 30), 184, 10, 30));
+      x += (wide ? 56 : 40);
+    } else if (roll < 0.42) {                       // roofed house
+      var m2 = mat();
+      blocks.push(B(m2, x, 174, 12, 40));
+      blocks.push(B(m2, x + 40, 174, 12, 40));
+      blocks.push(B(m2, x - 6, 164, 64, 10));
+      foxes.push(F(x + 26, 207));
+      if (rnd() < 0.55) foxes.push(F(x + 26, 157)); // roof sentry
+      x += 62;
+    } else if (roll < 0.6) {                        // tower + sentry
+      var h = 40 + ((rnd() * 3) | 0) * 8;
+      blocks.push(B(mat(), x, 214 - h, 12, h));
+      foxes.push(F(x + 6, 214 - h - 7));
+      x += 22;
+    } else if (roll < 0.78) {                       // wall guarding a fox
+      blocks.push(B(dif > 0.4 ? 'stone' : 'wood', x, 168, 12, 46));
+      foxes.push(F(x + 23, 207));
+      x += 40;
+    } else {                                        // TNT cache
+      blocks.push(B('tnt', x, 200, 14, 14));
+      foxes.push(F(x + 24, 207));
+      if (rnd() < 0.4) blocks.push(B('tnt', x + 34, 200, 14, 14));
+      x += 50;
+    }
+    x += 4 + ((rnd() * 8) | 0);
+  }
+  while (foxes.length < wantFox && x < 260) {       // stragglers in the open
+    foxes.push(F(x + 8, 207));
+    x += 20;
+  }
+  if (dif > 0.15 && rnd() < 0.85) {                 // a sky ledge with a pen
+    var ly = 96 + ((rnd() * 40) | 0);
+    var lx = 158 + ((rnd() * 30) | 0);
+    var lw = 84 + ((rnd() * 24) | 0);
+    if (lx + lw > 274) lw = 274 - lx;
+    platforms.push({ x: lx, y: ly, w: lw, h: 10 });
+    var m3 = dif > 0.5 ? mat() : 'glass';
+    blocks.push(B(m3, lx + 8, ly - 30, 10, 30));
+    blocks.push(B(m3, lx + lw - 18, ly - 30, 10, 30));
+    foxes.push(F(lx + lw / 2, ly - 7));
+    if (lw > 98) foxes.push(F(lx + lw / 2 + 16, ly - 7));
+    if (dif > 0.55 && rnd() < 0.5) blocks.push(B('tnt', lx + lw / 2 - 24, ly - 14, 14, 14));
+  }
+  var pool = ['rusty', 'zip', 'trio', 'willow', 'boomer', 'moe'];
+  var q = [];
+  var qn = Math.max(3, Math.min(5, Math.ceil(foxes.length / 2) + 1));
+  for (var i = 0; i < qn; i++) q.push(pool[(rnd() * pool.length) | 0]);
+  if (dif > 0.3 && q.indexOf('boomer') < 0 && q.indexOf('moe') < 0) {
+    q[0] = rnd() < 0.5 ? 'boomer' : 'moe';
+  }
+  var Fk = foxes.length * 5000, blockPts = 0;
+  for (var bi = 0; bi < blocks.length; bi++) blockPts += MATS[blocks[bi].mat].score;
+  return {
+    name: GEN_A[(rnd() * GEN_A.length) | 0] + ' ' + GEN_B[(rnd() * GEN_B.length) | 0],
+    stars: [Fk, Fk + 7000 + (blockPts * 0.25 | 0), Fk + 11000 + (blockPts * 0.5 | 0)],
+    queue: q,
+    platforms: platforms,
+    make: function () { return {
+      blocks: blocks.map(function (b) { return B(b.mat, b.x, b.y, b.w, b.h); }),
+      foxes: foxes.map(function (f) { return F(f.x, f.y); })
+    }; }
+  };
+}
+for (var GI = 31; GI <= 100; GI++) LEVELS.push(genLevel(GI));
 
 /* ---------------- state ---------------- */
 var cv, ctx, app;
@@ -566,11 +665,13 @@ function addScore(n, x, y) {
 /* ---------------- damage & destruction ---------------- */
 function damageBlock(b, d) {
   if (b.dead || d <= 0) return;
+  if (b.mat === 'tnt') d *= 2;      // TNT is touchy
   b.hp -= d;
   if (b.hp <= 0) {
     b.dead = true;
     addScore(MATS[b.mat].score, b.x + b.w / 2, b.y + b.h / 2);
     spawnParts(b.x + b.w / 2, b.y + b.h / 2, 7, MATS[b.mat].c2, 2.6);
+    if (b.mat === 'tnt') explode(b.x + b.w / 2, b.y + b.h / 2, 42, 85);
     sfx(b.mat === 'glass' ? 650 : b.mat === 'stone' ? 70 : 130, 0.09,
         b.mat === 'glass' ? 'triangle' : 'square', 0.05);
   } else if (d > 2.5) {
@@ -1382,6 +1483,14 @@ function drawBlock(b) {
     ctx.moveTo(b.x + 2, b.y + b.h - 3);
     ctx.lineTo(b.x + Math.min(b.w, b.h) * 0.7, b.y + 2);
     ctx.stroke();
+  } else if (b.mat === 'tnt') {
+    ctx.fillStyle = '#8f2a1c';
+    ctx.fillRect(b.x + 1, b.y + 2, b.w - 2, 3);
+    ctx.fillRect(b.x + 1, b.y + b.h - 5, b.w - 2, 3);
+    ctx.fillStyle = '#fff';
+    ctx.font = '900 6px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('TNT', b.x + b.w / 2, b.y + b.h / 2 + 0.5);
   } else {
     ctx.fillStyle = 'rgba(80,86,94,0.5)';
     ctx.fillRect(b.x + 3, b.y + 3, 2, 2);
