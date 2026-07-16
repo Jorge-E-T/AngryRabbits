@@ -1268,6 +1268,25 @@ function bindInput() {
   document.getElementById('btnMusic').addEventListener('click', toggleMusic);
   document.getElementById('btnStart').addEventListener('click', startGame);
 
+  // touch-drag scrolling for the menu card, mapped through the
+  // screen rotation so the list always follows the finger
+  var menuCard = document.querySelector('#menu .card');
+  var scrollLastY = null, scrollMoved = 0;
+  menuCard.addEventListener('pointerdown', function (e) {
+    scrollLastY = ptFromEvent(e).y; scrollMoved = 0;
+  });
+  menuCard.addEventListener('pointermove', function (e) {
+    if (scrollLastY === null) return;
+    var y = ptFromEvent(e).y;
+    var d = y - scrollLastY;
+    if (d) { menuCard.scrollTop -= d; scrollMoved += Math.abs(d); scrollLastY = y; }
+  });
+  menuCard.addEventListener('pointerup', function () { scrollLastY = null; });
+  menuCard.addEventListener('pointercancel', function () { scrollLastY = null; });
+  menuCard.addEventListener('click', function (e) {
+    if (scrollMoved > 8) { e.stopPropagation(); e.preventDefault(); scrollMoved = 0; }
+  }, true);
+
   window.addEventListener('pagehide', writeSave);
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'hidden' || document.hidden) writeSave();

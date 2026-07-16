@@ -36,7 +36,7 @@ canvas { display: block; touch-action: none; }
   width: 252px;
   max-height: 228px;
   overflow-y: auto;
-  touch-action: pan-y;
+  touch-action: none;
   background: #f7efd9;
   border: 3px solid #6b4423;
   border-radius: 10px;
